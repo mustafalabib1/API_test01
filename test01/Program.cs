@@ -1,4 +1,7 @@
-using test01.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using test01.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // dependency injection
-builder.Services.AddScoped<IWeatherForecastService,WeatherForecastService>();
+builder.Services.AddDbContext<ApplicationDbContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
