@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using test01;
 using test01.Data;
+using test01.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<RateLimitingMiddleware>();
+
+app.UseMiddleware<ProfilingMiddIeware>();
 
 app.UseHttpsRedirection();
 
