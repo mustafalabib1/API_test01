@@ -7,6 +7,23 @@ using test01.Filters;
 using test01.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("config.json");
+
+////First mothed for  Register the AttachmentsOptions from the configuration
+//var attachmentsOptions = builder.Configuration.GetSection("Attachments").Get<AttachmentsOptions>();
+//// Register the AttachmentsOptions with the DI container
+//builder.Services.AddSingleton(attachmentsOptions);
+
+//////second  mothed for  Register the AttachmentsOptions from the configuration
+//var attachmentsOptions = new AttachmentsOptions();
+//// Bind the configuration section to the AttachmentsOptions instance
+//builder.Configuration.GetSection("Attachments").Bind(attachmentsOptions);
+//// Register the AttachmentsOptions with the DI container
+//builder.Services.AddSingleton(attachmentsOptions);
+
+// Register the AttachmentsOptions using IOptions pattern
+builder.Services.Configure<AttachmentsOptions>(builder.Configuration.GetSection("Attachments"));
+
 
 // Add services to the container.
 
