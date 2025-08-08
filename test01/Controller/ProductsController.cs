@@ -11,10 +11,12 @@ namespace test01.Controller
     public class ProductsController: ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
+        private readonly ILogger<ProductsController> logger;
 
-        public ProductsController(ApplicationDbContext dbContext)
+        public ProductsController(ApplicationDbContext dbContext, ILogger<ProductsController> logger)
         {
             this.dbContext = dbContext;
+            this.logger = logger;
         }
 
         [HttpPost]
@@ -66,6 +68,8 @@ namespace test01.Controller
         [Route("{id:int}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
+            logger.LogDebug("Geting Product by Id # ", id);
+            logger.LogDebug("Geting Product by Id # {Id}", id);
             var product = await dbContext.Set<Product>().FindAsync(id);
             return product != null ? Ok(product) : NotFound();
         }
