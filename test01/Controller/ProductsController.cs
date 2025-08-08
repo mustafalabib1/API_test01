@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 using test01.Data;
+using test01.Filters;
 
 namespace test01.Controller
 {
@@ -54,7 +55,8 @@ namespace test01.Controller
             return NoContent();
         }
         [HttpGet]
-        [Route("")] 
+        [Route("")]
+        [LogSensitiveAction]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
             var products = await dbContext.Set<Product>().ToListAsync();
