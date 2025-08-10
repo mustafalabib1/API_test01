@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using test01.Data;
 using test01.Filters;
 
@@ -59,14 +61,17 @@ namespace test01.Controller
         [HttpGet]
         [Route("")]
         [LogSensitiveAction]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
+            var user = User.Identity?.Name;
+            var userId = ((ClaimsIdentity)User.Identity)?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var products = await dbContext.Set<Product>().ToListAsync();
             return Ok(products);
         }
         [HttpGet]
         [Route("{id:int}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<Product>> GetProduct(/*[FromRoute(Name ="id")]*/int id)
         {
             logger.LogDebug("Geting Product by Id # ", id);
             logger.LogDebug("Geting Product by Id # {Id}", id);

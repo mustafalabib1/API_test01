@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using test01;
+using test01.Authentication;
 using test01.Data;
 using test01.Filters;
 using test01.Middlewares;
@@ -35,6 +37,9 @@ builder.Services.AddSwaggerGen();
 
 // dependency injection
 builder.Services.AddDbContext<ApplicationDbContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAuthentication()
+    .AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler>("Basic", null);
 
 var app = builder.Build();
 
