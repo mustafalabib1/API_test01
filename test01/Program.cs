@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using test01;
 using test01.Authentication;
 using test01.Data;
@@ -9,22 +12,6 @@ using test01.Filters;
 using test01.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("config.json");
-
-////First mothed for  Register the AttachmentsOptions from the configuration
-//var attachmentsOptions = builder.Configuration.GetSection("Attachments").Get<AttachmentsOptions>();
-//// Register the AttachmentsOptions with the DI container
-//builder.Services.AddSingleton(attachmentsOptions);
-
-//////second  mothed for  Register the AttachmentsOptions from the configuration
-//var attachmentsOptions = new AttachmentsOptions();
-//// Bind the configuration section to the AttachmentsOptions instance
-//builder.Configuration.GetSection("Attachments").Bind(attachmentsOptions);
-//// Register the AttachmentsOptions with the DI container
-//builder.Services.AddSingleton(attachmentsOptions);
-
-// Register the AttachmentsOptions using IOptions pattern
-builder.Services.Configure<AttachmentsOptions>(builder.Configuration.GetSection("Attachments"));
 
 
 // Add services to the container.
@@ -32,14 +19,29 @@ builder.Services.Configure<AttachmentsOptions>(builder.Configuration.GetSection(
 //builder.Services.AddControllers();
 builder.Services.AddControllers(Options => Options.Filters.Add<LogActivtiyFilter>());
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // dependency injection
 builder.Services.AddDbContext<ApplicationDbContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+var jwtOptions= builder.Configuration.GetSection("Jwt").Get<JwtOptions>();
+builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddAuthentication()
-    .AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler>("Basic", null);
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, Options =>
+    {
+        Options.SaveToken = true;
+        Options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+            ValidateIssuerSigningKey=true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Signinkey))
+        };
+    });
 
 var app = builder.Build();
 
