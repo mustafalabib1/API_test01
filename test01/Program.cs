@@ -7,9 +7,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using test01;
 using test01.Authentication;
+using test01.Authorization;
 using test01.Data;
 using test01.Filters;
 using test01.Middlewares;
+using test01.Repositoies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +19,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 //builder.Services.AddControllers();
-builder.Services.AddControllers(Options => Options.Filters.Add<LogActivtiyFilter>());
+builder.Services.AddControllers(Options =>
+{
+    Options.Filters.Add<LogActivtiyFilter>();
+    Options.Filters.Add<PermissionBasedAuthorizationFilter>();
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 builder.Services.AddEndpointsApiExplorer();
@@ -25,6 +31,8 @@ builder.Services.AddSwaggerGen();
 
 // dependency injection
 builder.Services.AddDbContext<ApplicationDbContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<UsersRepo>();
+builder.Services.AddScoped<ProductsRepo>();
 
 var jwtOptions= builder.Configuration.GetSection("Jwt").Get<JwtOptions>();
 builder.Services.AddSingleton(jwtOptions);

@@ -4,18 +4,29 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using test01.Authentication;
+using test01.Repositoies;
 
 namespace test01.Controller
 {
     [ApiController]
     [Route("[controller]")]
-    public class UsersController(JwtOptions jwtOptions) : ControllerBase
+    public class UsersController(JwtOptions jwtOptions,UsersRepo usersRepo) : ControllerBase
     {
         [HttpPost]
         [Route("auth")]
 
         public ActionResult<string> AuthenticateUser(AuthenticationRequest request)
         {
+            if (request is null)
+            {
+                return BadRequest("Invalid request");
+            }
+            var user = usersRepo.GetUserByNameAsync(request.Username).Result;
+            if (user is null|| user.Password!=request.Password)
+            {
+                return Unauthorized("Wrong usename or password ");
+            }
+
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -28,8 +39,8 @@ namespace test01.Controller
                 Subject = new ClaimsIdentity(
                 new Claim[]
                 {
-                    new (ClaimTypes.NameIdentifier,request.Username),
-                    new (ClaimTypes.Email, "abc@Gmail.com"),
+                    new (ClaimTypes.NameIdentifier,user.Id.ToString()),
+                    new (ClaimTypes.Name, user.Name),
                 })
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);

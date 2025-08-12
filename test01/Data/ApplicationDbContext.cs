@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using test01.Data;
 
 namespace test01.Data
 {
@@ -12,6 +13,10 @@ namespace test01.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Product>().ToTable("Products");
+            modelBuilder.Entity<User>().ToTable("Users");
+            modelBuilder.Entity<UserPermission>()
+                .ToTable("UserPermissions")
+                .HasKey(up => new { up.UserId, up.PermissionId });
         }
     }
 }

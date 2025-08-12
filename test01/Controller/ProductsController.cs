@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using test01.Authorization;
 using test01.Data;
 using test01.Filters;
 
@@ -10,19 +11,11 @@ namespace test01.Controller
 {
     [ApiController]
     [Route("[controller]")]
-    public class ProductsController: ControllerBase
+    public class ProductsController(ApplicationDbContext dbContext, ILogger<ProductsController> logger) : ControllerBase
     {
-        private readonly ApplicationDbContext dbContext;
-        private readonly ILogger<ProductsController> logger;
-
-        public ProductsController(ApplicationDbContext dbContext, ILogger<ProductsController> logger)
-        {
-            this.dbContext = dbContext;
-            this.logger = logger;
-        }
-
         [HttpPost]
         [Route("")]
+        [CheckPermission(Permission.Write)]
         public async Task<ActionResult<int>> CreateProduct( Product product)
         {
             product.Id= 0; // Ensure Id is set to 0 for new products
@@ -32,6 +25,7 @@ namespace test01.Controller
         }
         [HttpPut]
         [Route("{id:int}")]
+        [CheckPermission(Permission.Update)]
         public async Task<ActionResult> UpdateProducte( Product product )
         {
             var existingProduct = await dbContext.Set<Product>().FindAsync(product.Id);
@@ -47,6 +41,7 @@ namespace test01.Controller
         }
         [HttpDelete]
         [Route("")]
+        [CheckPermission(Permission.Delete)]
         public async Task<ActionResult> DeleteProduct(int id)
         {
             var product = await dbContext.Set<Product>().FindAsync(id);
@@ -62,6 +57,7 @@ namespace test01.Controller
         [Route("")]
         [LogSensitiveAction]
         [Authorize]
+        [CheckPermission(Permission.Read)]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
             var user = User.Identity?.Name;
@@ -71,6 +67,7 @@ namespace test01.Controller
         }
         [HttpGet]
         [Route("{id:int}")]
+        [CheckPermission(Permission.Read)]
         public async Task<ActionResult<Product>> GetProduct(/*[FromRoute(Name ="id")]*/int id)
         {
             logger.LogDebug("Geting Product by Id # ", id);
